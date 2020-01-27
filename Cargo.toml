@@ -1,0 +1,14 @@
+[package]
+name = "back_code"
+version = "0.1.0"
+authors = ["Deep Gaurav <deepgauravraj@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+env_logger = "0.7.1"
+log = "0.4"
+futures = "0.3"
+ws = "0.9.1"
+tokio = { version = "0.2.10", features = ["full","tcp"] }
