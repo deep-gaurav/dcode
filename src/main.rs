@@ -4,6 +4,7 @@ use ws::util::Token;
 //use serde::{Serialize,Deserialize};
 use serde::{Serialize,Deserialize};
 use std::collections::HashMap;
+use std::string::FromUtf8Error;
 
 mod process_shell;
 
@@ -80,6 +81,7 @@ impl Server{
                     match self.shells.get_mut(&pid.clone()) {
                         Some(shell) =>{
                             shell.kill();
+                            self.shells.remove(pid);
                         }
                         None => {
                             println!("shell id {} not found",pid)
@@ -87,13 +89,29 @@ impl Server{
                     }
                 }
                 self.send_process_list()
-            }
-
+            },
             _ => {
                 println!("Unknown Process command {}",data.value);
             }
         }
     }
+
+    fn handle_exec(&mut self,data:&TransferData){
+        let process = self.shells.get_mut(data.value.as_str());
+        match process {
+            Some(process) => {
+                let inp:String = data.args.join(" ");
+                println!("exec {}",inp);
+                process.write(
+                    &Vec::from(inp)
+                );
+            },
+            None => {
+                println!("Cant find processid : {} to exec ",data.value);
+            }
+        }
+    }
+
 }
 
 impl Handler for Server{
@@ -104,7 +122,7 @@ impl Handler for Server{
         } else {
             println!("Unable to obtain client's IP address.")
         }
-        self.out.timeout(100,Token(1));
+        self.out.timeout(100,PROCESS_TICK);
         Ok(())
     }
 
@@ -118,6 +136,7 @@ impl Handler for Server{
                     match data.command.as_str() {
                         "ping" => self.handle_ping(&data),
                         "process" => self.handle_process(&data),
+                        "exec" => self.handle_exec(&data),
                         _ => {
                             println!("Unrecognised command {}",data.command);
                         }
@@ -139,6 +158,40 @@ impl Handler for Server{
     }
 
     fn on_timeout(&mut self, event: Token) -> ws::Result<()> {
+        match event {
+            PROCESS_TICK =>{
+                for process in &self.shells{
+                    let stdout = process.1.read();
+                    if !&stdout.is_empty(){
+                        let out_string = String::from_utf8(stdout);
+                        match out_string {
+                            Ok(out_string) => {
+                                println!("Received out {}",out_string);
+                                let msg = TransferData{
+                                    command:"exec".to_string(),
+                                    value:process.0.to_string(),
+                                    args:vec![out_string]
+                                };
+                                let msg_json = serde_json::to_string(&msg);
+                                match msg_json {
+                                    Ok(msg_str) => {
+                                        self.out.send(Message::from(msg_str));
+                                    }
+                                    Err(err)=>{
+                                        println!("{}",err);
+                                    }
+                                }
+                            }
+                            Err(err) => {
+                                println!("{}",err)
+                            }
+                        }
+                    }
+                }
+                self.out.timeout(100,PROCESS_TICK);
+            }
+            _ => {}
+        }
         Ok(())
     }
 
