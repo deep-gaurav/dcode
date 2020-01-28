@@ -17,7 +17,7 @@ impl ProcessShell{
             .spawn()
             .expect("Cant spawn bash");
         let child_in = child_shell.stdin.take().expect("Cant get child's stdin");
-        let mut child_out = BufReader::new(child_shell.stdout.take().expect("Cant get child's stdout"));
+        let child_out = BufReader::new(child_shell.stdout.take().expect("Cant get child's stdout"));
         let out = child_stream_to_vec(child_out);
         ProcessShell{
             child:child_shell,
@@ -49,7 +49,7 @@ fn child_stream_to_vec<R>(mut stream: R) -> Arc<Mutex<Vec<u8>>>
 {
     let out = Arc::new(Mutex::new(Vec::new()));
     let vec = out.clone();
-    thread::Builder::new()
+    let thread = thread::Builder::new()
         .name("child_stream_to_vec".into())
         .spawn(move || loop {
             let mut buf = [0];
@@ -71,5 +71,6 @@ fn child_stream_to_vec<R>(mut stream: R) -> Arc<Mutex<Vec<u8>>>
             }
         })
         .expect("!thread");
+
     out
 }
