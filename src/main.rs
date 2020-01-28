@@ -71,7 +71,7 @@ impl Server{
                 for pid in &data.args{
                     self.shells.insert(
                         pid.clone(),
-                        ProcessShell::new()
+                        ProcessShell::new().expect("Cant start pty")
                     );
                 }
                 self.send_process_list()
@@ -165,6 +165,7 @@ impl Handler for Server{
                     let mut out_string = String::new();
                     let mut err_string = String::new();
                     if !&stdout.is_empty(){
+                        let stdout = strip_ansi_escapes::strip(stdout.clone()).unwrap_or(stdout);
                         let out_st = String::from_utf8(stdout);
                         match out_st {
                             Ok(out_st) => {
@@ -176,6 +177,7 @@ impl Handler for Server{
                         }
                     }
                     if !&stderr.is_empty(){
+                        let stderr = strip_ansi_escapes::strip(stderr.clone()).unwrap_or(stderr);
                         let err_st = String::from_utf8(stderr);
                         match err_st {
                             Ok(err_st)=>{
@@ -187,7 +189,7 @@ impl Handler for Server{
                         }
                     }
                     if !out_string.is_empty() || !err_string.is_empty(){
-                        println!("Received out {}",out_string);
+                        println!("Received out {} {}",out_string,err_string);
                         let msg = TransferData{
                             command:"exec".to_string(),
                             value:process.0.to_string(),
