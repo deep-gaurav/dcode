@@ -157,6 +157,7 @@ impl Handler for Server{
         println!("Connection closing due to ({:?}) {}, connection_id {} ", code, reason,self.out.connection_id());
     }
 
+
     fn on_timeout(&mut self, event: Token) -> ws::Result<()> {
         match event {
             PROCESS_TICK =>{

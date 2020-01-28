@@ -3,11 +3,14 @@ use std::io::{Read, BufReader, Write};
 use std::thread;
 //use std::process::{Child, Command, Stdio, ChildStdin};
 use portable_pty::{PtySystemSelection, PtySize, PtyPair, CommandBuilder, Child};
+use vt100::{Parser, Screen};
 
 pub struct ProcessShell{
     child:Box<dyn Child>,
     pair:PtyPair,
     stdout:Arc<Mutex<Vec<u8>>>,
+    vt100:vt100::Parser,
+    last_content:Option<Screen>
 //    stderr:Option<Arc<Mutex<Vec<u8>>>>,
 //    stdin:Option<ChildStdin>
 }
@@ -25,7 +28,7 @@ impl ProcessShell{
                 });
                 match pair {
                     Ok(pair) => {
-                        let cmd = CommandBuilder::new("sh");
+                        let cmd = CommandBuilder::new("bash");
                         let child = pair.slave.spawn_command(cmd);
                         match child {
                             Ok(child)=>{
@@ -36,7 +39,9 @@ impl ProcessShell{
                                         Some(ProcessShell{
                                             child,
                                             pair,
-                                            stdout: out
+                                            stdout: out,
+                                            vt100:Parser::new(24,80,0),
+                                            last_content:None
                                         })
                                     },
                                     Err(err)=>None
@@ -87,7 +92,24 @@ impl ProcessShell{
     pub fn read(&mut self)->(Vec<u8>,Vec<u8>){
         let out_vec = self.stdout.clone().lock().expect("!lock").to_vec();
         self.stdout.clone().lock().expect("!lock").clear();
-        (out_vec,vec![])
+        self.vt100.process(out_vec.as_slice());
+//        print!("{}",self.vt100.screen().contents());
+        match &self.last_content {
+            Some(content)=>{
+                let new_screen = self.vt100.screen().clone();
+                let content_diff = new_screen.contents_diff(content).to_vec();
+                self.last_content=Some(new_screen.clone());
+                if content_diff.is_empty(){
+                    return (vec![],vec![]);
+                }
+                (new_screen.contents().into_bytes(),vec![])
+            }
+            None=>{
+                let screen = self.vt100.screen().clone();
+                self.last_content = Some(screen);
+                (self.vt100.screen().contents().into_bytes(),vec![])
+            }
+        }
     }
 
 //    pub fn read_stream(&mut self, stream:&Option<Arc<Mutex<Vec<u8>>>>) ->Vec<u8>{
