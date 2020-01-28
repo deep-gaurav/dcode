@@ -160,30 +160,46 @@ impl Handler for Server{
     fn on_timeout(&mut self, event: Token) -> ws::Result<()> {
         match event {
             PROCESS_TICK =>{
-                for process in &self.shells{
-                    let stdout = process.1.read();
+                for process in &mut self.shells{
+                    let (stdout,stderr) = process.1.read();
+                    let mut out_string = String::new();
+                    let mut err_string = String::new();
                     if !&stdout.is_empty(){
-                        let out_string = String::from_utf8(stdout);
-                        match out_string {
-                            Ok(out_string) => {
-                                println!("Received out {}",out_string);
-                                let msg = TransferData{
-                                    command:"exec".to_string(),
-                                    value:process.0.to_string(),
-                                    args:vec![out_string]
-                                };
-                                let msg_json = serde_json::to_string(&msg);
-                                match msg_json {
-                                    Ok(msg_str) => {
-                                        self.out.send(Message::from(msg_str));
-                                    }
-                                    Err(err)=>{
-                                        println!("{}",err);
-                                    }
-                                }
+                        let out_st = String::from_utf8(stdout);
+                        match out_st {
+                            Ok(out_st) => {
+                                out_string = out_st
                             }
                             Err(err) => {
                                 println!("{}",err)
+                            }
+                        }
+                    }
+                    if !&stderr.is_empty(){
+                        let err_st = String::from_utf8(stderr);
+                        match err_st {
+                            Ok(err_st)=>{
+                                err_string=err_st;
+                            }
+                            Err(err)=>{
+                                println!("{}",err)
+                            }
+                        }
+                    }
+                    if !out_string.is_empty() || !err_string.is_empty(){
+                        println!("Received out {}",out_string);
+                        let msg = TransferData{
+                            command:"exec".to_string(),
+                            value:process.0.to_string(),
+                            args:vec![out_string,err_string]
+                        };
+                        let msg_json = serde_json::to_string(&msg);
+                        match msg_json {
+                            Ok(msg_str) => {
+                                self.out.send(Message::from(msg_str));
+                            }
+                            Err(err)=>{
+                                println!("{}",err);
                             }
                         }
                     }
