@@ -165,7 +165,7 @@ impl Handler for Server{
                     let mut out_string = String::new();
                     let mut err_string = String::new();
                     if !&stdout.is_empty(){
-                        let stdout = strip_ansi_escapes::strip(stdout.clone()).unwrap_or(stdout);
+//                        let stdout = strip_ansi_escapes::strip(stdout.clone()).unwrap_or(stdout);
                         let out_st = String::from_utf8(stdout);
                         match out_st {
                             Ok(out_st) => {

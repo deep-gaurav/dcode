@@ -25,7 +25,7 @@ impl ProcessShell{
                 });
                 match pair {
                     Ok(pair) => {
-                        let cmd = CommandBuilder::new("bash");
+                        let cmd = CommandBuilder::new("sh");
                         let child = pair.slave.spawn_command(cmd);
                         match child {
                             Ok(child)=>{
@@ -130,16 +130,18 @@ impl ProcessShell{
 //    }
 
     pub fn write(&mut self,bytes:&Vec<u8>){
-        let str_s = String::from_utf8(bytes.to_vec());
-        match str_s {
-            Ok(str_s)=>{
-                writeln!(self.pair.master,"{}",&str_s.trim());
-            },
-            Err(err)=>{
-                println!("{}",err)
-            }
-        }
+//        let str_s = String::from_utf8(bytes.to_vec());
+//        match str_s {
+//            Ok(str_s)=>{
+//                write!(self.pair.master,"{}",&str_s.trim());
+//            },
+//            Err(err)=>{
+//                println!("{}",err)
+//            }
+//        }
 //        writeln!(self.pair.master,format!("{}"));
+
+        self.pair.master.write(bytes.as_slice());
     }
 
     pub fn kill(&mut self){
