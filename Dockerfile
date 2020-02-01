@@ -5,7 +5,8 @@ RUN apt install -y curl
 
 ADD . /src
 RUN cd /src
-RUN curl https://sh.rustup.rs -sSf | sh
+RUN curl https://sh.rustup.rs -sSf --output installer
+RUN sh installer -y
 RUN cargo build --release
 
 CMD ./target/release/back_code
