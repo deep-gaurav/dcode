@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM kalilinux:kali-rolling
 
 RUN apt update
 RUN apt install -y curl build-essential
