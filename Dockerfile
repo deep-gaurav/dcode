@@ -7,7 +7,7 @@ ADD . /src
 RUN cd /src
 RUN curl https://sh.rustup.rs -sSf --output installer
 RUN sh installer -y
-RUN export PATH="$PATH:$HOME/.cargo/bin"
+RUN source $HOME/.cargo/env
 
 RUN cargo build --release
 
