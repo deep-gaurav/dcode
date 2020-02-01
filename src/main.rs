@@ -1,4 +1,4 @@
-use ws::{listen, Sender, Handler, Handshake, CloseCode, Message};
+use ws::{listen, Sender, Handler, Handshake, CloseCode, Message, Builder, Settings};
 use crate::process_shell::ProcessShell;
 use ws::util::Token;
 //use serde::{Serialize,Deserialize};
@@ -221,8 +221,14 @@ impl Handler for Server{
 fn main(){
     let addr = format!("{}:{}",std::env::var("HOST").unwrap_or("0.0.0.0".to_owned()),std::env::var("PORT").unwrap_or("3012".to_owned()));
     println!("Running on address {} ",addr);
-    if let Err(error) = listen(&addr, |out| {
-        Server{out, shells:HashMap::new()}}) {
+
+    let ws_ser = Builder::new().with_settings(Settings{
+        tcp_nodelay:true,
+        ..Settings::default()
+    }).build(|out| {
+        Server{out, shells:HashMap::new()}}).unwrap();
+
+    if let Err(error) = ws_ser.listen(&addr) {
         // Inform the user of failure
         println!("Failed to create WebSocket due to {:?}", error);
     }
