@@ -1,11 +1,11 @@
 FROM ubuntu:latest
 
 RUN apt update
-RUN apt install -y curl source
+RUN apt install -y curl
 
 ADD . /src
 RUN curl https://sh.rustup.rs -sSf --output installer
 RUN sh installer -y
-RUN source $HOME/.cargo/env && cd /src && cargo build --release
+RUN export PATH="$PATH:$HOME/.cargo/bin" && cd /src && cargo build --release
 
 CMD /src/target/release/back_code
