@@ -1,13 +1,11 @@
 FROM ubuntu:latest
 
 RUN apt update
-RUN apt install -y curl rustc cargo
+RUN apt install -y curl
 
 ADD . /src
-#RUN curl https://sh.rustup.rs -sSf --output installer
-#RUN sh installer -y
-#RUN source $HOME/.cargo/env
+RUN curl https://sh.rustup.rs -sSf --output installer
+RUN sh installer -y
+RUN source $HOME/.cargo/env && cd /src && cargo build --release
 
-RUN cd /src && cargo build --release
-
-CMD ./target/release/back_code
+CMD /src/target/release/back_code
