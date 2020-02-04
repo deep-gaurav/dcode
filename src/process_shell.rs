@@ -1,7 +1,6 @@
 use std::sync::{Mutex, Arc};
 use std::io::{Read, BufReader, Write};
 use std::thread;
-//use std::process::{Child, Command, Stdio, ChildStdin};
 use portable_pty::{PtySystemSelection, PtySize, PtyPair, CommandBuilder, Child};
 use vt100::{Parser, Screen};
 
@@ -11,8 +10,6 @@ pub struct ProcessShell{
     stdout:Arc<Mutex<Vec<u8>>>,
     vt100:vt100::Parser,
     last_content:Option<Screen>
-//    stderr:Option<Arc<Mutex<Vec<u8>>>>,
-//    stdin:Option<ChildStdin>
 }
 impl ProcessShell{
     
@@ -61,39 +58,10 @@ impl ProcessShell{
         }
     }
 
-//    pub fn new_proc(&mut self,comm:&str){
-//        let com_args = comm.trim().split_ascii_whitespace().collect::<Vec<_>>();
-//        if let Some(com) = com_args.get(0).to_owned() {
-//            let mut child_shell = Command::new(com.trim())
-//                .stdin(Stdio::piped())
-//                .stdout(Stdio::piped())
-//                .stderr(Stdio::piped())
-//                .args(&com_args[1..])
-//                .spawn();
-//            match child_shell {
-//                Ok(mut child_shell) => {
-//                    let child_in = child_shell.stdin.take().expect("Cant get child's stdin");
-//                    let child_out = BufReader::new(child_shell.stdout.take().expect("Cant get child's stdout"));
-//                    let child_err = BufReader::new(child_shell.stderr.take().expect("Cant get child's error"));
-//                    let out = child_stream_to_vec(child_out);
-//                    let err = child_stream_to_vec(child_err);
-//                    self.stdout = Some(out);
-//                    self.stderr = Some(err);
-//                    self.child = Some(child_shell);
-//                    self.stdin = Some(child_in);
-//                }
-//                Err(err) => {
-//                    println!("Error {}", err);
-//                }
-//            }
-//        }
-//    }
-
     pub fn read(&mut self)->(Vec<u8>,Vec<u8>){
         let out_vec = self.stdout.clone().lock().expect("!lock").to_vec();
         self.stdout.clone().lock().expect("!lock").clear();
         self.vt100.process(out_vec.as_slice());
-//        print!("{}",self.vt100.screen().contents());
         match &self.last_content {
             Some(content)=>{
                 let new_screen = self.vt100.screen().clone();
@@ -112,57 +80,8 @@ impl ProcessShell{
         }
     }
 
-//    pub fn read_stream(&mut self, stream:&Option<Arc<Mutex<Vec<u8>>>>) ->Vec<u8>{
-//        match stream {
-//            Some(out)=>{
-//                let outstr = out.clone().lock().expect("!lock").to_vec();
-//                out.clone().lock().expect("!lock").clear();
-//                match &mut self.child {
-//                    Some(child)=>{
-//                        match child.try_wait(){
-//                            Ok(result) =>{
-//                                match result {
-//                                    Some(result)=>{
-//                                        println!("process exited {}",result);
-//                                        self.stdin=None;
-//                                        self.stdout =None;
-//                                        self.child=None;
-//                                    },
-//                                    None=>{
-////                                        println!("process running");
-//                                    }
-//                                }
-//                            }
-//                            Err(err)=>{
-//                                println!("Cant wait {}",err);
-//                            }
-//                        }
-//                    }
-//                    None =>{
-//                        self.stdout =None;
-//                        self.stdin=None;
-//                    }
-//                }
-//                outstr
-//            }
-//            None => {
-//                vec![]
-//            }
-//        }
-//    }
 
     pub fn write(&mut self,bytes:&Vec<u8>){
-//        let str_s = String::from_utf8(bytes.to_vec());
-//        match str_s {
-//            Ok(str_s)=>{
-//                write!(self.pair.master,"{}",&str_s.trim());
-//            },
-//            Err(err)=>{
-//                println!("{}",err)
-//            }
-//        }
-//        writeln!(self.pair.master,format!("{}"));
-
         self.pair.master.write(bytes.as_slice());
     }
 
