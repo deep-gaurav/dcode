@@ -154,7 +154,7 @@ impl Server {
                 }
             }
             if !&stderr.is_empty() {
-                let stderr = strip_ansi_escapes::strip(stderr.clone()).unwrap_or(stderr);
+                // let stderr = strip_ansi_escapes::strip(stderr.clone()).unwrap_or(stderr);
                 let err_st = String::from_utf8(stderr);
                 match err_st {
                     Ok(err_st) => {
@@ -288,7 +288,7 @@ async fn main() {
         })
     });
 
-    let fs_s = warp::path("files").and(warp::fs::dir("./files"));
+    let fs_s = warp::path("files").and(warp::fs::dir("/src/files"));
 
     let routes = ws_serve.or(fs_s);
 
