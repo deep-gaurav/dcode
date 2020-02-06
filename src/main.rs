@@ -288,9 +288,11 @@ async fn main() {
         })
     });
 
-    let fs_s = warp::path("files").and(warp::fs::dir("/home/deep"));
+    let fs_s = warp::path("files").and(warp::fs::dir("./files"));
 
     let routes = ws_serve.or(fs_s);
 
-    warp::serve(routes).run(([0, 0, 0, 0], 9001)).await
+    // let addr = format!("{}:{}",std::env::var("HOST").unwrap_or("0.0.0.0".to_owned()),std::env::var("PORT").unwrap_or("3012".to_owned()));
+    
+    warp::serve(routes).run(([0, 0, 0, 0], std::env::var("PORT").unwrap_or("3012".to_owned()).parse().unwrap())).await
 }
