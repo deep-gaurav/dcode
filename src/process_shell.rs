@@ -18,7 +18,7 @@ impl ProcessShell{
         match pty_system {
             Ok(pty_system)=>{
                 let pair = pty_system.openpty(PtySize{
-                    rows:24,
+                    rows:2000,
                     cols:80,
                     pixel_height:0,
                     pixel_width:0
