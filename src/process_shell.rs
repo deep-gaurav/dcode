@@ -18,7 +18,7 @@ impl ProcessShell{
         match pty_system {
             Ok(pty_system)=>{
                 let pair = pty_system.openpty(PtySize{
-                    rows:200,
+                    rows:2000,
                     cols:800,
                     pixel_height:0,
                     pixel_width:0
@@ -37,7 +37,7 @@ impl ProcessShell{
                                             child,
                                             pair,
                                             stdout: out,
-                                            vt100:Parser::new(24,80,0),
+                                            vt100:Parser::new(2000,800,0),
                                             last_content:None
                                         })
                                     },
