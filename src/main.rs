@@ -1,11 +1,9 @@
 use crate::process_shell::ProcessShell;
 //use serde::{Serialize,Deserialize};
-use futures::{FutureExt, SinkExt, StreamExt};
+use futures::{FutureExt, StreamExt};
 use futures_util::stream::TryStreamExt;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::string::FromUtf8Error;
-use std::sync::{Arc, Mutex};
 use warp::filters::ws::Message;
 use warp::Filter;
 
@@ -35,7 +33,9 @@ impl Server {
                     args: vec![format!("{}", time), format!("{}", now_time)],
                 };
                 if let Ok(send_str) = serde_json::to_string(&pong) {
-                    self.out.send(Ok(Message::text(send_str)));
+                    if let Err(err)=self.out.send(Ok(Message::text(send_str))){
+                        println!("{:?}",err );
+                    }
                 }
             }
         }
@@ -59,7 +59,7 @@ impl Server {
         let response_str =
             serde_json::to_string(&response_data).expect("Cant convert Transfer Data to JSON");
         println!("Send process list {}",response_str);
-        match self.out.send(Ok(Message::text((response_str)))){
+        match self.out.send(Ok(Message::text(response_str))){
             Ok(d)=>{
                 println!("Ok pl send {:?}",d)
             }
@@ -237,7 +237,7 @@ async fn main() {
     let ws_serve = warp::path("ws").and(warp::ws()).map(|ws: warp::ws::Ws| {
         ws.on_upgrade(|socket| {
             println!("New connection");
-            let (mut tx, mut rx) = socket.split();
+            let (tx, rx) = socket.split();
 
             let (ctx, crx) = std::sync::mpsc::channel();
 
@@ -276,7 +276,9 @@ async fn main() {
                 }
             });
 
-            ctx.send(WSMes::Connect);
+            if let Err(err)=ctx.send(WSMes::Connect){
+                println!("{:?}",err );
+            }
             let ctx_dis = ctx.clone();
 
             let stream_fut = rx
@@ -289,19 +291,23 @@ async fn main() {
                     // let sendt = tx.send(Message::text("anything"));
 
                     // sendt
-                    ctx.send(WSMes::Message(msg));
+                    if let Err(err)=ctx.send(WSMes::Message(msg)){
+                        println!("{:?}",err );
+                    }
                     futures::future::ok(())
 
                     // futures::future::join(sendt, futures::future::ready((()))).then(|res|{futures::future::ok(())})
                 })
-                .then(move |result| {
+                .then(move |_result| {
                     println!("Disconnected ");
-                    ctx_dis.clone().send(WSMes::Disconnect);
+                    if let Err(err)=ctx_dis.clone().send(WSMes::Disconnect){
+                        println!("{:?}",err );
+                    }
                     futures::future::ready(())
                 })
                 .map(|result| println!("{:?}", result));
             let timefut = async { Ok::<(), ()>(()) };
-            futures::future::join(stream_fut, timefut).then(|res| futures::future::ready(()))
+            futures::future::join(stream_fut, timefut).then(|_res| futures::future::ready(()))
         })
     });
 

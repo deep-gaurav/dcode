@@ -1,5 +1,5 @@
 use std::sync::{Mutex, Arc};
-use std::io::{Read, BufReader, Write};
+use std::io::{Read, Write};
 use std::thread;
 use portable_pty::{PtySystemSelection, PtySize, PtyPair, CommandBuilder, Child};
 use vt100::{Parser, Screen};
@@ -41,18 +41,26 @@ impl ProcessShell{
                                             last_content:None
                                         })
                                     },
-                                    Err(err)=>None
+                                    Err(err)=>{
+                                        println!("{:?}",err );
+                                        None
+                                    }
                                 }
                             },
-                            Err(err)=>None
+                            Err(err)=>{
+                                println!("{:?}",err );
+                                None
+                            }
                         }
                     },
                     Err(err) => {
+                        println!("{:?}",err );
                         None
-                    },
+                    }
                 }
             }
             Err(err)=>{
+                println!("{:?}",err );
                 None
             }
         }
@@ -82,15 +90,21 @@ impl ProcessShell{
 
 
     pub fn write(&mut self,bytes:&Vec<u8>){
-        self.pair.master.write(bytes.as_slice());
+        if let Err(err)=self.pair.master.write(bytes.as_slice()){
+            println!("Cant write to child {:?}",err );
+        }
     }
 
     pub fn resize(&mut self,cols:u16,rows:u16){
-        self.pair.master.resize(PtySize{rows,cols,pixel_width:0,pixel_height:0});
+        if let Err(err)=self.pair.master.resize(PtySize{rows,cols,pixel_width:0,pixel_height:0}){
+            println!("Cant resize {:?}",err );
+        }
     }
 
     pub fn kill(&mut self){
-        self.child.kill();
+        if let Err(err)=self.child.kill(){
+            println!("Cant kill child {:?}",err );
+        }
     }
 
 }
@@ -102,7 +116,7 @@ fn child_stream_to_vec<R>(mut stream: R) -> Arc<Mutex<Vec<u8>>>
 {
     let out = Arc::new(Mutex::new(Vec::new()));
     let vec = out.clone();
-    let thread = thread::Builder::new()
+    let _thread = thread::Builder::new()
         .name("child_stream_to_vec".into())
         .spawn(move || loop {
             let mut buf = [0];
