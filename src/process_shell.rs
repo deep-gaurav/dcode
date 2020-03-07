@@ -12,7 +12,7 @@ pub struct ProcessShell{
     last_content:Option<Screen>
 }
 impl ProcessShell{
-    
+
     pub fn new()->Option<ProcessShell>{
         let pty_system = PtySystemSelection::default().get();
         match pty_system {
@@ -70,12 +70,12 @@ impl ProcessShell{
                 if content_diff.is_empty(){
                     return (vec![],vec![]);
                 }
-                (new_screen.contents().into_bytes(),vec![])
+                (new_screen.contents().into_bytes(),out_vec)
             }
             None=>{
                 let screen = self.vt100.screen().clone();
                 self.last_content = Some(screen);
-                (self.vt100.screen().contents().into_bytes(),vec![])
+                (self.vt100.screen().contents().into_bytes(),out_vec)
             }
         }
     }
