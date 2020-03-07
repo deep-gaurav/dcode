@@ -90,7 +90,24 @@ impl Server {
                     }
                 }
                 self.send_process_list()
-            }
+            },
+            "resize" => {
+                if let (Some(rows),Some(cols)) = (data.args.get(1),data.args.get(2)){
+                    if let (Ok(rows),Ok(cols)) = (rows.trim().parse::<u16>(),cols.trim().parse::<u16>()){
+                        if let Some(shell) = data.args.get(0){
+                            if shell!=""{
+                                if let Some(shell) = self.shells.get_mut(&shell.clone()){
+                                    shell.resize(cols,rows);
+                                }
+                            }else{
+                                for shell in &mut self.shells{
+                                    shell.1.resize(cols,rows);
+                                }
+                            }
+                        }
+                    }
+                }
+            },
             _ => {
                 println!("Unknown Process command {}", data.value);
             }
@@ -233,7 +250,7 @@ async fn main() {
             }));
 
             std::thread::spawn(move||{
-                
+
                 let mut ws_handler = Server {
                     shells: HashMap::new(),
                     out: ftx.clone(),
@@ -293,6 +310,6 @@ async fn main() {
     let routes = ws_serve.or(fs_s);
 
     // let addr = format!("{}:{}",std::env::var("HOST").unwrap_or("0.0.0.0".to_owned()),std::env::var("PORT").unwrap_or("3012".to_owned()));
-    
+
     warp::serve(routes).run(([0, 0, 0, 0], std::env::var("PORT").unwrap_or("3012".to_owned()).parse().unwrap())).await
 }

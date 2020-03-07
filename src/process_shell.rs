@@ -85,6 +85,10 @@ impl ProcessShell{
         self.pair.master.write(bytes.as_slice());
     }
 
+    pub fn resize(&mut self,cols:u16,rows:u16){
+        self.pair.master.resize(PtySize{rows,cols,pixel_width:0,pixel_height:0});
+    }
+
     pub fn kill(&mut self){
         self.child.kill();
     }
