@@ -7,18 +7,35 @@ use warp::hyper;
 use regex::Regex;
 
 lazy_static! {
-    static ref port_reg: Regex = Regex::new(r"^/portforward/(\d+)(/.*)").unwrap();
+    static ref port_reg: Regex = Regex::new(r"/portforward/(\d+)(/.*)").unwrap();
 }
 
-pub fn is_portforward(req:&hyper::Uri)->bool{
-    let url = &req.to_string();
-    port_reg.find(url).is_some()
+pub fn is_portforward(url:&str)->bool{
+    println!("testing port for {:?}",url );
+    let r=port_reg.find(url).is_some();
+    println!("result {:?}", r);
+    r
 }
 
 pub async fn port_forward(mut req: Request<Body>) -> Result<Response<Body>, std::convert::Infallible> {
     let http_client = hyper::Client::new();
     let url = &req.uri().to_string();
-    let mat = port_reg.captures(url).expect("forward url not found");
+    let mat = port_reg.captures(url);
+    let port;
+    let path;
+    match mat {
+        Some(mat)=>{
+            port=format!("{}",&mat[1]);
+            path=format!("{}",&mat[2]);
+        }
+        None =>{
+            let refrer = req.headers()["referer"].to_str().expect("refere not string");
+            let mat = port_reg.captures(refrer).expect("Not even matching referer");
+            port = format!("{}",&mat[1]);
+            path = format!("{}",url);
+        }
+
+    }
 
     // let body_bytes = hyper::body::to_bytes(req.body());
     // let reqbody = Body::wrap_stream(req.body());
@@ -28,8 +45,8 @@ pub async fn port_forward(mut req: Request<Body>) -> Result<Response<Body>, std:
     // .body(reqbody)
     // .unwrap()
     // ;
-    req.headers_mut().insert("host", "localhost:9000".parse().expect("cant make header"));
-    *req.uri_mut() = format!("http://localhost:{}{}",&mat[1],&mat[2]).parse().expect("cant convert to uri");
+    // req.headers_mut().insert("host", "localhost:9000".parse().expect("cant make header"));
+    *req.uri_mut() = format!("http://localhost:{}{}",port,path).parse().expect("cant convert to uri");
 
     // *req.uri_mut() = (req.uri().to_string()+"index.html").parse().unwrap();
 

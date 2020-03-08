@@ -364,7 +364,9 @@ async fn main() {
                 println!("request raw {:?}", req);
                 async move {
                     let uri = req.uri();
-                    if is_portforward(uri) {
+                    
+                    let referer = &req.headers().get("referer").unwrap_or(&req.headers().values().next().expect("no value")).to_str().expect("referer not string");
+                    if is_portforward(&uri.to_string()) || is_portforward(referer) {
                         println!("port forwarding");
                         let resp = port_forward(req).await;
                         resp
