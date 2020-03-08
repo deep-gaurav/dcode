@@ -110,7 +110,7 @@ impl ProcessShell{
 }
 
 
-fn child_stream_to_vec<R>(mut stream: R) -> Arc<Mutex<Vec<u8>>>
+pub fn child_stream_to_vec<R>(mut stream: R) -> Arc<Mutex<Vec<u8>>>
     where
         R: Read + Send + 'static,
 {

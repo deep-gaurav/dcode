@@ -1,0 +1,12 @@
+[
+  {
+    "name":"javascript",
+    "program":"node",
+    "args":["/home/deep/sideproj/javascript-typescript-langserver/lib/language-server-stdio"]
+  },
+  {
+    "name":"typescript",
+    "program":"node",
+    "args":["/home/deep/sideproj/javascript-typescript-langserver/lib/language-server-stdio"]
+  }
+]

@@ -1,4 +1,8 @@
+use crate::process_shell::child_stream_to_vec;
 use crate::process_shell::ProcessShell;
+use futures_util::sink::SinkExt;
+use std::io::Write;
+use tower_service::Service;
 //use serde::{Serialize,Deserialize};
 use futures::{FutureExt, StreamExt};
 use futures_util::stream::TryStreamExt;
@@ -7,6 +11,17 @@ use std::collections::HashMap;
 use warp::filters::ws::Message;
 use warp::Filter;
 
+use std::convert::Infallible;
+use warp::hyper;
+use warp::hyper::{Body, Request};
+
+use regex::Regex;
+
+use lang_servers::handle_language_servers;
+use port_forward::{is_portforward, port_forward};
+
+mod lang_servers;
+mod port_forward;
 mod process_shell;
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -21,6 +36,13 @@ struct Server {
     shells: HashMap<String, ProcessShell>,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+struct LangServerConfig {
+    name: String,
+    program: String,
+    args: Vec<String>,
+}
+
 impl Server {
     fn handle_ping(&mut self, data: &TransferData) {
         if let Some(time) = data.args.get(0) {
@@ -33,8 +55,8 @@ impl Server {
                     args: vec![format!("{}", time), format!("{}", now_time)],
                 };
                 if let Ok(send_str) = serde_json::to_string(&pong) {
-                    if let Err(err)=self.out.send(Ok(Message::text(send_str))){
-                        println!("{:?}",err );
+                    if let Err(err) = self.out.send(Ok(Message::text(send_str))) {
+                        println!("{:?}", err);
                     }
                 }
             }
@@ -58,14 +80,10 @@ impl Server {
         };
         let response_str =
             serde_json::to_string(&response_data).expect("Cant convert Transfer Data to JSON");
-        println!("Send process list {}",response_str);
-        match self.out.send(Ok(Message::text(response_str))){
-            Ok(d)=>{
-                println!("Ok pl send {:?}",d)
-            }
-            Err(e)=>{
-                println!("Err pl {}",e)
-            }
+        println!("Send process list {}", response_str);
+        match self.out.send(Ok(Message::text(response_str))) {
+            Ok(d) => println!("Ok pl send {:?}", d),
+            Err(e) => println!("Err pl {}", e),
         }
     }
 
@@ -90,24 +108,26 @@ impl Server {
                     }
                 }
                 self.send_process_list()
-            },
+            }
             "resize" => {
-                if let (Some(rows),Some(cols)) = (data.args.get(1),data.args.get(2)){
-                    if let (Ok(rows),Ok(cols)) = (rows.trim().parse::<u16>(),cols.trim().parse::<u16>()){
-                        if let Some(shell) = data.args.get(0){
-                            if shell!=""{
-                                if let Some(shell) = self.shells.get_mut(&shell.clone()){
-                                    shell.resize(cols,rows);
+                if let (Some(rows), Some(cols)) = (data.args.get(1), data.args.get(2)) {
+                    if let (Ok(rows), Ok(cols)) =
+                        (rows.trim().parse::<u16>(), cols.trim().parse::<u16>())
+                    {
+                        if let Some(shell) = data.args.get(0) {
+                            if shell != "" {
+                                if let Some(shell) = self.shells.get_mut(&shell.clone()) {
+                                    shell.resize(cols, rows);
                                 }
-                            }else{
-                                for shell in &mut self.shells{
-                                    shell.1.resize(cols,rows);
+                            } else {
+                                for shell in &mut self.shells {
+                                    shell.1.resize(cols, rows);
                                 }
                             }
                         }
                     }
                 }
-            },
+            }
             _ => {
                 println!("Unknown Process command {}", data.value);
             }
@@ -132,7 +152,7 @@ impl Server {
 impl Server {
     fn on_message(&mut self, msg: Message) {
         //        println!("receive msg ");
-        let msg_bytes= msg.as_bytes();
+        let msg_bytes = msg.as_bytes();
         if let Ok(string_msg) = String::from_utf8(msg_bytes.to_owned()) {
             match serde_json::from_str::<TransferData>(&string_msg) {
                 Ok(data) => match data.command.as_str() {
@@ -190,15 +210,13 @@ impl Server {
                 let msg_json = serde_json::to_string(&msg);
                 match msg_json {
                     Ok(msg_str) => {
-                        println!("Send {}",msg_str);
-                        match self.out.send(Ok(Message::text(msg_str))){
-                            Ok(e)=>{
-                                println!("Sent {:?}",e);
+                        println!("Send {}", msg_str);
+                        match self.out.send(Ok(Message::text(msg_str))) {
+                            Ok(e) => {
+                                println!("Sent {:?}", e);
                             }
 
-                            Err(e)=>{
-                                println!("Error {}",e)
-                            }
+                            Err(e) => println!("Error {}", e),
                         }
                     }
                     Err(err) => {
@@ -234,7 +252,8 @@ enum WSMes {
 
 #[tokio::main]
 async fn main() {
-    let ws_serve = warp::path("ws").and(warp::ws()).map(|ws: warp::ws::Ws| {
+    let fs_s = warp::path("files").and(warp::fs::dir("/src/files"));
+    let mut ws_serve = warp::path("ws").and(warp::ws()).map(|ws: warp::ws::Ws| {
         ws.on_upgrade(|socket| {
             println!("New connection");
             let (tx, rx) = socket.split();
@@ -249,14 +268,13 @@ async fn main() {
                 }
             }));
 
-            std::thread::spawn(move||{
-
+            std::thread::spawn(move || {
                 let mut ws_handler = Server {
                     shells: HashMap::new(),
                     out: ftx.clone(),
                 };
                 println!("New handler");
-                for msg in crx{
+                for msg in crx {
                     match msg {
                         WSMes::Connect => {
                             println!("Connected");
@@ -276,8 +294,8 @@ async fn main() {
                 }
             });
 
-            if let Err(err)=ctx.send(WSMes::Connect){
-                println!("{:?}",err );
+            if let Err(err) = ctx.send(WSMes::Connect) {
+                println!("{:?}", err);
             }
             let ctx_dis = ctx.clone();
 
@@ -291,8 +309,8 @@ async fn main() {
                     // let sendt = tx.send(Message::text("anything"));
 
                     // sendt
-                    if let Err(err)=ctx.send(WSMes::Message(msg)){
-                        println!("{:?}",err );
+                    if let Err(err) = ctx.send(WSMes::Message(msg)) {
+                        println!("{:?}", err);
                     }
                     futures::future::ok(())
 
@@ -300,8 +318,8 @@ async fn main() {
                 })
                 .then(move |_result| {
                     println!("Disconnected ");
-                    if let Err(err)=ctx_dis.clone().send(WSMes::Disconnect){
-                        println!("{:?}",err );
+                    if let Err(err) = ctx_dis.clone().send(WSMes::Disconnect) {
+                        println!("{:?}", err);
                     }
                     futures::future::ready(())
                 })
@@ -311,11 +329,71 @@ async fn main() {
         })
     });
 
-    let fs_s = warp::path("files").and(warp::fs::dir("/src/files"));
+    let langs_servers =
+        warp::path!("lsp" / String)
+            .and(warp::ws())
+            .map(|lang, ws: warp::ws::Ws| {
+                ws.on_upgrade(move |socket| handle_language_servers(socket, lang))
+            });
+    // let lang_servers = langs.iter().map(|lang| warp::path("lsp").and(warp::path(lang.name))
+    //     .and(warp::ws())
+    //     .map(|ws:warp::ws::Ws|{
+    //         ws.on_upgrade(
+    //             |socket|{
+    //                 handle_language_servers(socket, lang)
+    //             }
+    //         )
+    //     })
+    //
+    // ).fold(ws_serve,|old,new|old.or(new));
+    //
+    // let p_forward = warp::reply().map(|req|{
+    //
+    // });
 
-    let routes = ws_serve.or(fs_s);
+    let routes = langs_servers.or(ws_serve).or(fs_s);
 
     // let addr = format!("{}:{}",std::env::var("HOST").unwrap_or("0.0.0.0".to_owned()),std::env::var("PORT").unwrap_or("3012".to_owned()));
+    let warp_svc = warp::service(routes);
 
-    warp::serve(routes).run(([0, 0, 0, 0], std::env::var("PORT").unwrap_or("3012".to_owned()).parse().unwrap())).await
+    let make_svc = hyper::service::make_service_fn(move |_| {
+        let warp_svc = warp_svc.clone();
+        async move {
+            let svc = hyper::service::service_fn(move |mut req: Request<Body>| {
+                let mut warp_svc = warp_svc.clone();
+                println!("request raw {:?}", req);
+                async move {
+                    let uri = req.uri();
+                    if is_portforward(uri) {
+                        println!("port forwarding");
+                        let resp = port_forward(req).await;
+                        resp
+                    } else {
+                        println!("before request");
+                        let resp = warp_svc.call(req).await;
+                        println!("after request");
+                        resp
+                    }
+                }
+            });
+            Ok::<_, Infallible>(svc)
+        }
+    });
+
+    hyper::Server::bind(
+        &(
+            [0, 0, 0, 0],
+            std::env::var("PORT")
+                .unwrap_or("3012".to_owned())
+                .parse()
+                .unwrap(),
+        )
+            .into(),
+    )
+    .serve(make_svc)
+    .await;
+
+    // Ok(())
+
+    // warp::serve(routes).run(([0, 0, 0, 0], std::env::var("PORT").unwrap_or("3012".to_owned()).parse().unwrap())).await
 }
