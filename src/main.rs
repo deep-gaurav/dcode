@@ -364,7 +364,7 @@ async fn main() {
                 println!("request raw {:?}", req);
                 async move {
                     let uri = req.uri();
-                    
+
                     let referer = &req.headers().get("referer").unwrap_or(&req.headers().values().next().expect("no value")).to_str().expect("referer not string");
                     if is_portforward(&uri.to_string()) || is_portforward(referer) {
                         println!("port forwarding");
@@ -381,6 +381,15 @@ async fn main() {
             Ok::<_, Infallible>(svc)
         }
     });
+
+    // let mut qbittorrent_shell = ProcessShell::new().expect("Cant start qbittorrent shell");
+    // qbittorrent_shell.write(&Vec::from("qbittorrent-nox --web-ui=1080\n"));
+    // qbittorrent_shell.write(&Vec::from("y\n"));
+    let qbit = std::process::Command::new("qbittorrent-nox")
+        .args(&["--webui-port=1080"])
+        .stdin(std::process::Stdio::piped())
+        .spawn().expect("cant spawn qbittorrent");
+    writeln!(qbit.stdin.expect("cant get qbit stdin"),"y");
 
     hyper::Server::bind(
         &(
