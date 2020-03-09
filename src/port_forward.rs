@@ -37,18 +37,7 @@ pub async fn port_forward(mut req: Request<Body>) -> Result<Response<Body>, std:
 
     }
 
-    // let body_bytes = hyper::body::to_bytes(req.body());
-    // let reqbody = Body::wrap_stream(req.body());
-    // let mut new_req = Request::builder()
-    // .uri(req.uri())
-    // .method(req.method())
-    // .body(reqbody)
-    // .unwrap()
-    // ;
-    // req.headers_mut().insert("host", "localhost:9000".parse().expect("cant make header"));
     *req.uri_mut() = format!("http://localhost:{}{}",port,path).parse().expect("cant convert to uri");
-
-    // *req.uri_mut() = (req.uri().to_string()+"index.html").parse().unwrap();
 
     println!("Client req {:?}", req );
     let response = http_client.request(req).await.expect("client error");

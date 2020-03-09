@@ -7,9 +7,9 @@ RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
 RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
 
 RUN apt update && apt install -y yarn
-RUN touch /.bachrc
+RUN touch /.bashrc
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
-RUN apt install -y nano
+RUN apt install -y nano python3-pip
 
 ADD . /src
 RUN curl https://sh.rustup.rs -sSf --output rustinstaller
