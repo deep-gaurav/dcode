@@ -6,7 +6,7 @@ RUN apt install -y curl build-essential python3 aria2 unrar unzip tree zip wget 
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
 RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
 
-RUN apt update && apt install yarn
+RUN apt update && apt install -y yarn
 
 ADD . /src
 RUN curl https://sh.rustup.rs -sSf --output rustinstaller
