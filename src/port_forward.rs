@@ -46,7 +46,8 @@ pub async fn port_forward(mut req: Request<Body>) -> Result<Response<Body>, std:
             reff = format!("{}",&mat[1]);
             path = format!("{}",url);
 
-            if req.method() == hyper::Method::GET {
+            // if req.method() == hyper::Method::GET
+            {
                 let resp = Response::builder()
                     .status(301)
                     .header("location", format!("/portforward/{}{}",port,path))
