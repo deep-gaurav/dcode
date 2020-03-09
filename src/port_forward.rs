@@ -45,6 +45,15 @@ pub async fn port_forward(mut req: Request<Body>) -> Result<Response<Body>, std:
             port = format!("{}",&mat[2]);
             reff = format!("{}",&mat[1]);
             path = format!("{}",url);
+
+            if req.method() == hyper::Method::GET {
+                let resp = Response::builder()
+                    .status(301)
+                    .header("location", format!("/portforward/{}{}",port,path))
+                    .body(Body::empty())
+                    ;
+                return Ok(resp.expect("Cant create Response"));
+            }
         }
 
     }
@@ -67,6 +76,8 @@ pub async fn port_forward(mut req: Request<Body>) -> Result<Response<Body>, std:
         let location = format!("{}",response.headers()["uri"].to_str().unwrap());
         response.headers_mut().insert("uri",format!("/portforward/{}{}",port,location).parse().unwrap());
     }
+    // let uri = format!("{}",response.uri_mut());
+    // *response.uri_mut() = format!("http://localhost:{}{}",port,path).parse().expect("cant convert to uri");
     Ok(response)
 
 }
