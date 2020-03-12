@@ -125,13 +125,14 @@ impl Server{
             }
 
             "open" => {
+                println!("openn file {:?}",data );
                 if let Some(path) = data.args.get(0){
                     if let Ok(mut file)= fs::File::open(path){
                         let mut buf = String::new();
                         let read_data = file.read_to_string(&mut buf);
                         if let Ok(read_data)=read_data{
                             let mut send_data = data.clone();
-                            send_data.args[1]= buf;
+                            send_data.args.push(buf);
                             if let Ok(data_str) = serde_json::to_string(&send_data){
                                 self.out.send(
                                     Ok(
