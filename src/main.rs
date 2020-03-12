@@ -23,8 +23,9 @@ use port_forward::{is_portforward, port_forward};
 mod lang_servers;
 mod port_forward;
 mod process_shell;
+mod process_dir;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug,Clone)]
 struct TransferData {
     command: String,
     value: String,
@@ -48,7 +49,7 @@ impl Server {
         if let Some(time) = data.args.get(0) {
             if let Ok(time) = time.parse::<i64>() {
                 let now_time = chrono::Utc::now().timestamp_millis();
-                println!("connection id  : ping one way time : {}", now_time - time);
+                // println!("connection id  : ping one way time : {}", now_time - time);
                 let pong = TransferData {
                     command: "ping".to_string(),
                     value: data.value.clone(),
@@ -159,6 +160,7 @@ impl Server {
                     "ping" => self.handle_ping(&data),
                     "process" => self.handle_process(&data),
                     "exec" => self.handle_exec(&data),
+                    "fs" => self.handle_fs(&data),
                     _ => {
                         println!("Unrecognised command {}", data.command);
                     }
