@@ -18,7 +18,16 @@ struct FsEntry {
 impl Server{
 
     fn handle_list_dir(&mut self,dirpath:&str){
-        let lists:Vec<_> = list_dir(Path::new(dirpath)).iter().filter_map(|f|serde_json::to_string(f).ok()).collect();
+        let mut lists:Vec<_> = list_dir(Path::new(dirpath));
+        let path = Path::new(dirpath);
+        if let Some(parent) = path.parent(){
+            lists.push(FsEntry{
+                is_dir:parent.is_dir(),
+                name:"..".to_string(),
+                path:parent.to_str().unwrap_or_default().to_string()
+            });
+        }
+        let lists=lists.iter().filter_map(|f|serde_json::to_string(f).ok()).collect();
         let out_data = TransferData{
             args:lists,
             command:"fs".to_string(),
