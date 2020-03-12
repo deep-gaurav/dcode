@@ -107,6 +107,40 @@ impl Server{
                     }
                 }
             }
+            "new_dir" =>{
+                if let Some(path)=data.args.get(0){
+                    if let Ok(dir) = fs::create_dir_all(path){
+                        self.out.send(
+                            Ok(
+                                Message::text(serde_json::to_string(data).unwrap())
+                            )
+                        );
+                    }
+                }
+            }
+            "delete" => {
+                if let Some(file)=data.args.get(0){
+                    let path = Path::new(file);
+                    if path.is_dir(){
+                        if let Ok(_)=fs::remove_dir_all(path){
+                            self.out.send(
+                                Ok(
+                                    Message::text(serde_json::to_string(data).unwrap())
+                                )
+                            );
+                        }
+                    }else{
+                        if let Ok(_)=fs::remove_file(path){
+                            self.out.send(
+                                Ok(
+                                    Message::text(serde_json::to_string(data).unwrap())
+                                )
+                            );
+                        }
+                    }
+                }
+            }
+
 
             "save" => {
                 if let Some(mut file)=self.create_file(data){
