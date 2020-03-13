@@ -21,4 +21,4 @@ RUN curl https://sh.rustup.rs -sSf --output rustinstaller
 RUN sh rustinstaller -y
 RUN export PATH="$PATH:$HOME/.cargo/bin" && cd /src && cargo build --release
 
-CMD /src/target/release/back_code
+CMD cd /src && ./target/release/back_code
