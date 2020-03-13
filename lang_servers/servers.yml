@@ -1,8 +1,11 @@
 langservers:
-  python:
-    - python
-    - python-langserver.py
-    - --stdio
-  go:
-    - /usr/local/bin/go
-    - langserver.go
+  # python:
+  #   - python
+  #   - python-langserver.py
+  #   - --stdio
+  # go:
+  #   - /usr/local/bin/go
+  #   - langserver.go
+  javascript:
+    - node
+    - /javascript-typescript-langserver/lib/language-server-stdio
