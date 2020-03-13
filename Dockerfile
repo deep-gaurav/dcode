@@ -12,7 +12,7 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | b
 RUN apt install -y nano python3-pip git
 
 RUN cd / && git clone https://github.com/sourcegraph/javascript-typescript-langserver.git
-RUN cd /javascript-typescript-langserver && npm install & npm run build
+RUN cd /javascript-typescript-langserver && npm install && npm run build
 
 ADD . /src
 RUN curl https://sh.rustup.rs -sSf --output rustinstaller
