@@ -8,7 +8,7 @@ RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources
 
 RUN curl -sL https://deb.nodesource.com/setup_13.x | bash -
 
-RUN apt update && apt install -y yarn npm nodejs
+RUN apt update && apt install -y yarn nodejs
 RUN touch /.bashrc
 
 RUN apt install -y nano python3-pip git
