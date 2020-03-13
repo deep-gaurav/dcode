@@ -8,11 +8,13 @@ RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources
 
 RUN apt update && apt install -y yarn npm
 RUN touch /.bashrc
+
+ENV HOME=/
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
 RUN apt install -y nano python3-pip git
 
 RUN cd / && git clone https://github.com/sourcegraph/javascript-typescript-langserver.git
-RUN cd /javascript-typescript-langserver && npm install && npm run build
+RUN nvm install 12 && nvm use 12 && cd /javascript-typescript-langserver && npm install && npm run build
 
 ADD . /src
 RUN curl https://sh.rustup.rs -sSf --output rustinstaller
