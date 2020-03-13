@@ -393,6 +393,12 @@ async fn main() {
         .spawn().expect("cant spawn qbittorrent");
     writeln!(qbit.stdin.expect("cant get qbit stdin"),"y");
 
+    let ws_lsp_proxy_node = std::process::Command::new("node")
+        .args(&["/jsonrpc-ws-proxy/dist/server.js","--port=7000","--languageServers=/jsonrpc-ws-proxy/servers.yml"])
+        .stdin(std::process::Stdio::piped())
+        .spawn().expect("cant spawn qbittorrent");
+    writeln!(qbit.stdin.expect("cant get qbit stdin"),"y");
+
     hyper::Server::bind(
         &(
             [0, 0, 0, 0],

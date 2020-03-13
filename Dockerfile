@@ -21,4 +21,9 @@ RUN curl https://sh.rustup.rs -sSf --output rustinstaller
 RUN sh rustinstaller -y
 RUN export PATH="$PATH:$HOME/.cargo/bin" && cd /src && cargo build --release
 
+
+RUN cd / && git clone https://github.com/wylieconlon/jsonrpc-ws-proxy.git
+ADD ./lang_servers/servers.yml /jsonrpc-ws-proxy/
+RUN cd /jsonrpc-ws-proxy/ && npm install && npm run prepare
+
 CMD cd /src && ./target/release/back_code

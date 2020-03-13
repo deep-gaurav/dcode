@@ -1,0 +1,8 @@
+langservers:
+  python:
+    - python
+    - python-langserver.py
+    - --stdio
+  go:
+    - /usr/local/bin/go
+    - langserver.go
