@@ -6,7 +6,7 @@ RUN apt install -y curl build-essential python3 aria2 unrar unzip tree zip wget 
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
 RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
 
-RUN apt update && apt install -y yarn
+RUN apt update && apt install -y yarn npm
 RUN touch /.bashrc
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
 RUN apt install -y nano python3-pip git
@@ -15,5 +15,8 @@ ADD . /src
 RUN curl https://sh.rustup.rs -sSf --output rustinstaller
 RUN sh rustinstaller -y
 RUN export PATH="$PATH:$HOME/.cargo/bin" && cd /src && cargo build --release
+
+RUN cd / && git clone https://github.com/sourcegraph/javascript-typescript-langserver.git
+RUN cd /javascript-typescript-langserver && npm install & npm run build
 
 CMD /src/target/release/back_code
