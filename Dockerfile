@@ -21,6 +21,9 @@ RUN cd / && git clone https://github.com/wylieconlon/jsonrpc-ws-proxy.git
 ADD ./lang_servers/servers.yml /jsonrpc-ws-proxy/
 RUN cd /jsonrpc-ws-proxy/ && npm install && npm run prepare
 
+RUN pip3 install python-language-server
+RUN pip3 install 'python-language-server[all]'
+
 ADD . /src
 RUN curl https://sh.rustup.rs -sSf --output rustinstaller
 RUN sh rustinstaller -y

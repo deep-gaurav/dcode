@@ -8,5 +8,10 @@
     "name":"typescript",
     "program":"node",
     "args":["/javascript-typescript-langserver/lib/language-server-stdio"]
+  },
+  {
+    "name":"python",
+    "program":"python3",
+    "args":["-m","pyls"]
   }
 ]

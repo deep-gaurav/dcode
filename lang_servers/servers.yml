@@ -9,3 +9,7 @@ langservers:
   javascript:
     - node
     - /javascript-typescript-langserver/lib/language-server-stdio
+  python:
+    - python3
+    - -m
+    - pyls
