@@ -1,13 +1,13 @@
 [
   {
     "name":"javascript",
-    "program":"node",
-    "args":["/javascript-typescript-langserver/lib/language-server-stdio"]
+    "program":"typescript-language-server",
+    "args":["--stdio"]
   },
   {
     "name":"typescript",
-    "program":"node",
-    "args":["/javascript-typescript-langserver/lib/language-server-stdio"]
+    "program":"typescript-language-server",
+    "args":["--stdio"]
   },
   {
     "name":"python",

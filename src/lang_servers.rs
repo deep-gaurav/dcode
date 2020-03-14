@@ -69,7 +69,7 @@ pub async fn handle_language_servers(socket:warp::ws::WebSocket,lang:String) ->(
                         for jsn in  jsonreg.captures_iter(&outstr){
                             if let Ok(_)= serde_json::from_str::<serde_json::Value>(&jsn[0]){
 
-                                if jsn[0].trim().is_empty(){
+                                if !jsn[0].trim().is_empty(){
                                     ftx.send(Ok(warp::ws::Message::text(&jsn[0])));
                                     out.clone().lock().expect("!lock").clear();
                                 }

@@ -24,6 +24,8 @@ RUN cd /jsonrpc-ws-proxy/ && npm install && npm run prepare
 RUN pip3 install python-language-server
 RUN pip3 install 'python-language-server[all]'
 
+RUN npm install -g typescript-language-server
+
 ADD . /src
 RUN curl https://sh.rustup.rs -sSf --output rustinstaller
 RUN sh rustinstaller -y
