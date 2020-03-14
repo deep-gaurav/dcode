@@ -9,7 +9,7 @@ use super::LangServerConfig;
 use lazy_static::lazy_static;
 
 lazy_static! {
-    static ref jsonreg: Regex = Regex::new(r#"\{\s*['"]jsonrpc['"]:\s*['"]2.0\s*['"](,\s*['"]result\s*['"]:\s*.*\s*)?(,\s*['"]error\s*['"]:\s*.*\s*)?,\s*['"]id\s*['"]:\s*\d*\s*\}"#).unwrap();
+    static ref jsonreg: Regex = Regex::new(r#"\{\s*['"]jsonrpc['"]:\s*['"]2.0\s*['"],(.*)\}"#).unwrap();
 }
 
 pub async fn handle_language_servers(socket:warp::ws::WebSocket,lang:String) ->() {
