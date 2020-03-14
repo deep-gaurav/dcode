@@ -6,6 +6,11 @@ use std::io::Write;
 
 use super::process_shell::child_stream_to_vec;
 use super::LangServerConfig;
+use lazy_static::lazy_static;
+
+lazy_static! {
+    static ref jsonreg: Regex = Regex::new(r#"\{\s*['"]jsonrpc['"]:\s*['"]2.0\s*['"](,\s*['"]result\s*['"]:\s*.*\s*)?(,\s*['"]error\s*['"]:\s*.*\s*)?,\s*['"]id\s*['"]:\s*\d*\s*\}"#).unwrap();
+}
 
 pub async fn handle_language_servers(socket:warp::ws::WebSocket,lang:String) ->() {
 
@@ -18,7 +23,7 @@ pub async fn handle_language_servers(socket:warp::ws::WebSocket,lang:String) ->(
     let lang = langs.iter().find(|l|l.name==lang);
     if let Some(lang) = lang{
         println!("Starting language server {:#?}",lang);
-        let jsonreg = Regex::new(r#"{\s*['"]jsonrpc['"]:\s*['"]2.0\s*['"](,\s*['"]result\s*['"]:\s*.*\s*)?(,\s*['"]error\s*['"]:\s*.*\s*)?,\s*['"]id\s*['"]:\s*\d*\s*}"#).unwrap();
+        // let jsonreg = Regex::new().unwrap();
 
         let mut rls_child =
 
