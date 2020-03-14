@@ -18,7 +18,7 @@ pub async fn handle_language_servers(socket:warp::ws::WebSocket,lang:String) ->(
     let lang = langs.iter().find(|l|l.name==lang);
     if let Some(lang) = lang{
         println!("Starting language server {:#?}",lang);
-        let jsonreg = Regex::new(r"\{(?:[^{}]|(?R))*\}").unwrap();
+        let jsonreg = Regex::new(r"{(?:[^{}]|(?R))*}").unwrap();
 
         let mut rls_child =
 
