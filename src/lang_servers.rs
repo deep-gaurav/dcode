@@ -65,8 +65,11 @@ pub async fn handle_language_servers(socket:warp::ws::WebSocket,lang:String) ->(
                         println!("stdout send {}",String::from_utf8(o.clone()).unwrap_or_default());
                         let outstr = String::from_utf8(o).expect("Output not utf8");
 
-                        for jsn in  jsonreg.captures_iter(&outstr){
-                            ftx.send(Ok(warp::ws::Message::text(&jsn[0])));
+                        let jsoni = outstr.rfind(r#"{"jsonrpc""#);
+                        if let Some(jsoni)=jsoni{
+                            for jsn in  jsonreg.captures_iter(&outstr[jsoni..]){
+                                ftx.send(Ok(warp::ws::Message::text(&jsn[0])));
+                            }
                         }
                         out.clone().lock().expect("!lock").clear();
 
