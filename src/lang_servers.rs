@@ -62,16 +62,17 @@ pub async fn handle_language_servers(socket:warp::ws::WebSocket,lang:String) ->(
                     std::thread::sleep(std::time::Duration::from_millis(100));
                     let o =out.clone().lock().expect("!lock").to_vec();
                     if o.len()>0{
-                        println!("stdout send {}",String::from_utf8(o.clone()).unwrap_or_default());
+                        // println!("stdout send {}",String::from_utf8(o.clone()).unwrap_or_default());
                         let outstr = String::from_utf8(o).expect("Output not utf8");
 
                         // outstr.find(r#"{""}"#)
                         for jsn in  jsonreg.captures_iter(&outstr){
                             if let Ok(_)= serde_json::from_str::<serde_json::Value>(&jsn[0]){
 
-
-                                ftx.send(Ok(warp::ws::Message::text(&jsn[0])));
-                                out.clone().lock().expect("!lock").clear();
+                                if jsn[0].trim().is_empty(){
+                                    ftx.send(Ok(warp::ws::Message::text(&jsn[0])));
+                                    out.clone().lock().expect("!lock").clear();
+                                }
                             }
 
                         }
@@ -84,7 +85,7 @@ pub async fn handle_language_servers(socket:warp::ws::WebSocket,lang:String) ->(
 
                     let i = err_out.clone().lock().expect("!lock").to_vec();
                     if i.len()>0{
-                        println!("stderr send {}",String::from_utf8(i.clone()).unwrap_or_default());
+                        eprintln!("stderr send {}",String::from_utf8(i.clone()).unwrap_or_default());
                         // ftx.send(Ok(warp::ws::Message::binary(i)));
                         err_out.clone().lock().expect("!lock").clear();
                     }
@@ -115,7 +116,7 @@ pub async fn handle_language_servers(socket:warp::ws::WebSocket,lang:String) ->(
                 // stdin.write(msg.as_bytes());
                 let header = format!("Content-Length: {}\r\n\r\n{}",bytes.len(),msg);
                 write!(stdin,"{}", header);
-                println!("recvt {:?}",header );
+                // println!("recvt {:?}",header );
             }else{
                 break;
             }
