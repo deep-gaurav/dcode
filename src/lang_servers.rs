@@ -67,9 +67,14 @@ pub async fn handle_language_servers(socket:warp::ws::WebSocket,lang:String) ->(
 
                         // outstr.find(r#"{""}"#)
                         for jsn in  jsonreg.captures_iter(&outstr){
-                            ftx.send(Ok(warp::ws::Message::text(&jsn[0])));
+                            if let Ok(_)= serde_json::from_str::<serde_json::Value>(&jsn[0]){
+
+
+                                ftx.send(Ok(warp::ws::Message::text(&jsn[0])));
+                                out.clone().lock().expect("!lock").clear();
+                            }
+
                         }
-                        out.clone().lock().expect("!lock").clear();
 
                         // if let Some(header) = splits.next(){
                         //     if let Some(body) = splits.next(){
