@@ -252,10 +252,25 @@ enum WSMes {
     Message(Message),
 }
 
+fn set_bashrc()->Result<(),std::io::Error>{
+    let mut bashrc=std::fs::File::create("/.bashrc")?;
+    bashrc.write_all(
+(r#"
+export TERM=vt100
+alias ls='ls --color=auto'
+export PS1="\[\033[38;5;10m\]\W\[$(tput sgr0)\] \[$(tput sgr0)\]\[\033[38;5;14m\]\\$\[$(tput sgr0)\] \[$(tput sgr0)\]"
+"#).as_bytes()
+)?;
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() {
+    if let Err(err)=set_bashrc(){
+        eprintln!("Eroor setting bashrc {:#?}",err);
+    }
     let fs_s = warp::path("files").and(warp::fs::dir("/src/files"));
-    let mut ws_serve = warp::path("ws").and(warp::ws()).map(|ws: warp::ws::Ws| {
+    let ws_serve = warp::path("ws").and(warp::ws()).map(|ws: warp::ws::Ws| {
         ws.on_upgrade(|socket| {
             println!("New connection");
             let (tx, rx) = socket.split();
