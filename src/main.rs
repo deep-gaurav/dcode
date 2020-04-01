@@ -280,7 +280,11 @@ fn install_rust()->Result<(),std::io::Error>{
         ]
     ).current_dir("/").status()?;
     std::process::Command::new("yarn").current_dir("/dcodefront/").status()?;
-    std::process::Command::new("yarn").args(
+    std::process::Command::new("yarn")
+    .env("PATH", std::env::var("PATH")
+        .unwrap_or("".to_owned()) +":/.cargo/bin"
+    )
+    .args(
         &vec![
             "build"
         ]
