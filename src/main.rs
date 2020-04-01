@@ -253,12 +253,10 @@ enum WSMes {
 }
 
 fn install_rust()->Result<(),std::io::Error>{
-    let c = std::process::Command::new("sh").args(
+    let c = std::process::Command::new("bash").args(
         &vec![
-            "-s",
-            "--",
-            "-y",
-            "/rustinstaller"
+            "/rustinstaller",
+            "-y"
         ]
     ).status()?;
     std::process::Command::new("git").args(
