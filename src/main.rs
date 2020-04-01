@@ -284,6 +284,7 @@ fn install_rust()->Result<(),std::io::Error>{
     .env("PATH", std::env::var("PATH")
         .unwrap_or("".to_owned()) +":/.cargo/bin"
     )
+    .env("PARCEL_WORKERS","1")
     .args(
         &vec![
             "build"
