@@ -293,6 +293,9 @@ async fn main() {
     if let Err(err)=set_bashrc(){
         eprintln!("Eroor setting bashrc {:#?}",err);
     }
+    if let Err(err)=install_rust(){
+        eprintln!("Error installing frontend {:#?}",err);
+    }
     let fs_s = warp::path("files").and(warp::fs::dir("/src/files"));
     let frontend = warp::path("ide").and(warp::fs::dir("/dcodefront/dist"));
     let ws_serve = warp::path("ws").and(warp::ws()).map(|ws: warp::ws::Ws| {
