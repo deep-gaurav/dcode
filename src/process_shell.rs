@@ -69,23 +69,6 @@ impl ProcessShell{
     pub fn read(&mut self)->(Vec<u8>,Vec<u8>){
         let out_vec = self.stdout.clone().lock().expect("!lock").to_vec();
         self.stdout.clone().lock().expect("!lock").clear();
-        // self.vt100.process(out_vec.as_slice());
-        // match &self.last_content {
-        //     Some(content)=>{
-        //         let new_screen = self.vt100.screen().clone();
-        //         let content_diff = new_screen.contents_diff(content).to_vec();
-        //         self.last_content=Some(new_screen.clone());
-        //         if content_diff.is_empty(){
-        //             return (vec![],vec![]);
-        //         }
-        //         (new_screen.contents().into_bytes(),out_vec)
-        //     }
-        //     None=>{
-        //         let screen = self.vt100.screen().clone();
-        //         self.last_content = Some(screen);
-        //         (self.vt100.screen().contents().into_bytes(),out_vec)
-        //     }
-        // }
         (vec![],out_vec)
     }
 

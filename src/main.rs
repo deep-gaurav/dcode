@@ -264,12 +264,37 @@ export PS1="\[\033[38;5;10m\]\W\[$(tput sgr0)\] \[$(tput sgr0)\]\[\033[38;5;14m\
     Ok(())
 }
 
+fn install_rust()->Result<(),std::io::Error>{
+    let c = std::process::Command::new("sh").args(
+        &vec![
+            "-s",
+            "--",
+            "-y",
+            "/rustinstaller"
+        ]
+    ).status()?;
+    std::process::Command::new("git").args(
+        &vec![
+            "clone",
+            "https://github.com/deep-gaurav/dcodefront.git"
+        ]
+    ).current_dir("/").status()?;
+    std::process::Command::new("yarn").current_dir("/dcodefront/").status()?;
+    std::process::Command::new("yarn").args(
+        &vec![
+            "build"
+        ]
+    ).current_dir("/dcodefront/").status()?;
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() {
     if let Err(err)=set_bashrc(){
         eprintln!("Eroor setting bashrc {:#?}",err);
     }
     let fs_s = warp::path("files").and(warp::fs::dir("/src/files"));
+    let frontend = warp::path("ide").and(warp::fs::dir("/dcodefront/dist"));
     let ws_serve = warp::path("ws").and(warp::ws()).map(|ws: warp::ws::Ws| {
         ws.on_upgrade(|socket| {
             println!("New connection");
@@ -368,7 +393,7 @@ async fn main() {
     //
     // });
 
-    let routes = langs_servers.or(ws_serve).or(fs_s);
+    let routes = langs_servers.or(ws_serve).or(fs_s).or(frontend);
 
     // let addr = format!("{}:{}",std::env::var("HOST").unwrap_or("0.0.0.0".to_owned()),std::env::var("PORT").unwrap_or("3012".to_owned()));
     let warp_svc = warp::service(routes);
@@ -402,6 +427,7 @@ async fn main() {
     // let mut qbittorrent_shell = ProcessShell::new().expect("Cant start qbittorrent shell");
     // qbittorrent_shell.write(&Vec::from("qbittorrent-nox --web-ui=1080\n"));
     // qbittorrent_shell.write(&Vec::from("y\n"));
+
     let qbit = std::process::Command::new("qbittorrent-nox")
         .args(&["--webui-port=1080"])
         .stdin(std::process::Stdio::piped())
