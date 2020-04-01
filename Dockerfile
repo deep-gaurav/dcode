@@ -27,6 +27,7 @@ RUN pip3 install 'python-language-server[all]'
 RUN npm install -g typescript-language-server
 
 ADD . /src
+ADD .bashrc /.bashrc
 RUN curl https://sh.rustup.rs -sSf --output rustinstaller
 RUN sh rustinstaller -y
 RUN export PATH="$PATH:$HOME/.cargo/bin" && cd /src && cargo build --release

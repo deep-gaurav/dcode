@@ -252,18 +252,6 @@ enum WSMes {
     Message(Message),
 }
 
-fn set_bashrc()->Result<(),std::io::Error>{
-    let mut bashrc=std::fs::File::create("/.bashrc")?;
-    bashrc.write_all(
-(r#"
-export TERM=vt100
-alias ls='ls --color=auto'
-export PS1="\[\033[38;5;10m\]\W\[$(tput sgr0)\] \[$(tput sgr0)\]\[\033[38;5;14m\]\\$\[$(tput sgr0)\] \[$(tput sgr0)\]"
-"#).as_bytes()
-)?;
-    Ok(())
-}
-
 fn install_rust()->Result<(),std::io::Error>{
     let c = std::process::Command::new("sh").args(
         &vec![
@@ -295,9 +283,6 @@ fn install_rust()->Result<(),std::io::Error>{
 
 #[tokio::main]
 async fn main() {
-    if let Err(err)=set_bashrc(){
-        eprintln!("Eroor setting bashrc {:#?}",err);
-    }
     if let Err(err)=install_rust(){
         eprintln!("Error installing frontend {:#?}",err);
     }
