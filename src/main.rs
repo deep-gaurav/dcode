@@ -303,6 +303,11 @@ async fn main() {
     }
     let fs_s = warp::path("files").and(warp::fs::dir("/src/files"));
     let frontend = warp::path("ide").and(warp::fs::dir("/dcodefront/dist"));
+    let front_compile_thread = std::thread::spawn(move ||{
+        if let Err(err)=install_rust(){
+            eprintln!("Error installing frontend {:#?}",err);
+        }
+    });
     let ws_serve = warp::path("ws").and(warp::ws()).map(|ws: warp::ws::Ws| {
         ws.on_upgrade(|socket| {
             println!("New connection");
@@ -461,6 +466,7 @@ async fn main() {
     .serve(make_svc)
     .await;
 
+    front_compile_thread.join();
     // Ok(())
 
     // warp::serve(routes).run(([0, 0, 0, 0], std::env::var("PORT").unwrap_or("3012".to_owned()).parse().unwrap())).await
