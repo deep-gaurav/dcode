@@ -28,6 +28,7 @@ RUN npm install -g typescript-language-server
 
 ADD . /src
 ADD .bashrc /.bashrc
+ADD install_frontend.sh /install_frontend.sh
 RUN curl https://sh.rustup.rs -sSf --output rustinstaller
 RUN sh rustinstaller -y
 RUN export PATH="$PATH:$HOME/.cargo/bin" && cd /src && cargo build --release

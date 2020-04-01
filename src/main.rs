@@ -255,35 +255,14 @@ enum WSMes {
 fn install_rust()->Result<(),std::io::Error>{
     let c = std::process::Command::new("bash").args(
         &vec![
-            "/rustinstaller",
-            "-y"
+            "/install_frontend.sh",
         ]
     ).status()?;
-    std::process::Command::new("git").args(
-        &vec![
-            "clone",
-            "https://github.com/deep-gaurav/dcodefront.git"
-        ]
-    ).current_dir("/").status()?;
-    std::process::Command::new("yarn").current_dir("/dcodefront/").status()?;
-    std::process::Command::new("yarn")
-    .env("PATH", std::env::var("PATH")
-        .unwrap_or("".to_owned()) +":/.cargo/bin"
-    )
-    .env("PARCEL_WORKERS","1")
-    .args(
-        &vec![
-            "build"
-        ]
-    ).current_dir("/dcodefront/").status()?;
     Ok(())
 }
 
 #[tokio::main]
 async fn main() {
-    if let Err(err)=install_rust(){
-        eprintln!("Error installing frontend {:#?}",err);
-    }
     let fs_s = warp::path("files").and(warp::fs::dir("/src/files"));
     let frontend = warp::path("ide").and(warp::fs::dir("/dcodefront/dist"));
     let front_compile_thread = tokio::spawn(futures::future::lazy(|_|{
