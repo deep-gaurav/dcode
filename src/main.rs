@@ -264,12 +264,8 @@ fn install_rust()->Result<(),std::io::Error>{
 #[tokio::main]
 async fn main() {
     let fs_s = warp::path("files").and(warp::fs::dir("/src/files"));
-    let frontend = warp::path("ide").and(warp::fs::dir("/dcodefront/dist"));
-    let front_compile_thread = tokio::spawn(futures::future::lazy(|_|{
-        if let Err(err)=install_rust(){
-            eprintln!("Error installing frontend {:#?}",err);
-        }
-    }));
+    let frontend = warp::fs::dir("/src/frontend");
+
     let ws_serve = warp::path("ws").and(warp::ws()).map(|ws: warp::ws::Ws| {
         ws.on_upgrade(|socket| {
             println!("New connection");
