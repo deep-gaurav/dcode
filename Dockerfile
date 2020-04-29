@@ -11,7 +11,7 @@ RUN curl -sL https://deb.nodesource.com/setup_13.x | bash -
 RUN apt update && apt install -y yarn nodejs
 RUN touch /.bashrc
 
-RUN apt install -y nano python3-pip git
+RUN apt install -y nano python3-pip git ffmpeg
 
 RUN cd / && git clone https://github.com/sourcegraph/javascript-typescript-langserver.git
 RUN cd /javascript-typescript-langserver && npm install && npm run build
