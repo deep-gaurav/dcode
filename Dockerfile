@@ -11,7 +11,7 @@ RUN wget -q https://xpra.org/gpg.asc -O- | apt-key add -
 RUN add-apt-repository "deb https://xpra.org/ focal main"
 RUN apt update
 
-RUN apt install xpra xpra-html5 xterm
+RUN apt install -y xpra xpra-html5 xterm
 
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
 RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
