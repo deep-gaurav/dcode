@@ -5,7 +5,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt update
 RUN apt install -y curl build-essential python3 aria2 unrar unzip tree zip wget lynx vim qbittorrent-nox wget
 
-RUN apt install -y apt-transport-https
+RUN apt install -y apt-transport-https software-properties-common
 RUN wget -q https://xpra.org/gpg.asc -O- | apt-key add -
 
 RUN add-apt-repository "deb https://xpra.org/ focal main"
