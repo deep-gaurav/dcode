@@ -7,7 +7,7 @@ use warp::hyper;
 use regex::Regex;
 
 lazy_static! {
-    static ref port_reg: Regex = Regex::new(r"(.*)/portforward/(\d+)(/.*)").unwrap();
+    static ref port_reg: Regex = Regex::new(r"(.*)/portforward/(\d+)(/.*)?").unwrap();
 }
 
 pub fn is_portforward(url:&str)->bool{
