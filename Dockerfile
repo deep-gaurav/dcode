@@ -8,7 +8,7 @@ RUN apt install -y curl build-essential python3 aria2 unrar unzip tree zip wget 
 RUN apt install -y apt-transport-https
 RUN wget -q https://xpra.org/gpg.asc -O- | apt-key add -
 
-RUN sudo add-apt-repository "deb https://xpra.org/ focal main"
+RUN add-apt-repository "deb https://xpra.org/ focal main"
 RUN apt update
 
 RUN apt install xpra xpra-html5 xterm
