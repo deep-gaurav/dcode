@@ -3,7 +3,15 @@ FROM ubuntu:latest
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt update
-RUN apt install -y curl build-essential python3 aria2 unrar unzip tree zip wget lynx vim qbittorrent-nox xpra
+RUN apt install -y curl build-essential python3 aria2 unrar unzip tree zip wget lynx vim qbittorrent-nox wget
+
+RUN apt install -y apt-transport-https
+RUN wget -q https://xpra.org/gpg.asc -O- | apt-key add -
+
+RUN sudo add-apt-repository "deb https://xpra.org/ focal main"
+RUN apt update
+
+RUN apt install xpra xpra-html5 xterm
 
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
 RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
